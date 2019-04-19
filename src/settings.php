@@ -19,7 +19,7 @@ return [
         // เพิ่ม Database connection settings
         "db" => [
             "host" => "localhost:3307",
-            "dbname" => "mung_ming_shop",
+            "dbname" => "project_app",
             "user" => "root",
             "pass" => "12345678"
         ],

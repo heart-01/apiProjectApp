@@ -1,6 +1,5 @@
 <?php
 
-use Slim\App;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -8,6 +7,14 @@ use Slim\Http\Response;
 //prepare เป็นการเตรียมคำสั่ง sql
 //execute เปรียบเหมือนการ query
 //fetchAll เปรียบเหมือนการ fetch_array
+
+$app->get('/showRoom',function($request,$response,$args){
+    $sth = $this->db->prepare('SELECT * FROM room');
+    $sth->execute();
+    $room=$sth->fetchAll(); // fetchAll คือ การ fetch ทั้งหมดคืนค่าเป็น  array
+    return $this->response->withJson($room); // return ค่าเป็น Json
+});
+
 
 /*
 $app->get('/ShowCustomer',function($request,$response,$args){
