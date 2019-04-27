@@ -3,20 +3,77 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 
+//ล็อกอิน
+$app->get('/login/[{username},{password}]',function($request,$response,$args){
+    $sth=$this->db->prepare('SELECT * FROM student WHERE username=:a AND password=:b');
+    $sth->bindParam("a",$args['username']);  
+    $p=md5($args['password']);
+    $sth->bindParam("b",$p);  
+    $sth->execute();
+    $student=$sth->fetchObject(); 
+    if($student!=""){
+        return $this->response->withJson($student);
+    }else if($student==""){
+        return $this->response->withJson('Register');
+    }
+});
+
+//ฟังชั่น api เพิ่มข้อมูลสมาชิก
+$app->post('/addStudent',function($request,$response){
+    $input=$request->getParsedBody(); //รับการส่งข้อมูลจาก Body
+
+    $sql="SELECT idStu FROM student WHERE idStu=:idStu";
+    $sth=$this->db->prepare($sql);
+    $sth->bindParam("idStu",$input['idStu']);
+    $sth->execute();
+    $ckID=$sth->fetchObject(); 
+    if($ckID!=""){ //ถ้า fetchObject แล้วมีข้อมูล
+        return $this->response->withJson('repeat idStu'); //ให้ส่งค่า json เป็น repeat idStu
+    }else if($ckID==""){
+
+        $sql="SELECT username FROM student WHERE username=:username";
+        $sth=$this->db->prepare($sql);
+        $sth->bindParam("username",$input['username']);
+        $sth->execute();
+        $ckUser=$sth->fetchObject(); 
+        if($ckUser!=""){
+            return $this->response->withJson('repeat username');
+        }else{
+
+            $sql="INSERT INTO student (idStu,idStatus,nameStu,emailStu,telStu,username,password) 
+            VALUES (:idStu,'2',:nameStu,:emailStu,:telStu,:username,:password)";
+            $sth=$this->db->prepare($sql);
+            $sth->bindParam("idStu",$input['idStu']);  //$input[ข้างในนี้คือค่า name ที่ส่งมาจากฟร์อม]
+            $sth->bindParam("nameStu",$input['nameStu']);
+            $sth->bindParam("emailStu",$input['emailStu']);
+            $sth->bindParam("telStu",$input['telStu']);
+            $sth->bindParam("username",$input['username']);
+            $p=md5($input['password']);
+            $sth->bindParam("password",$p);
+            $sth->execute();
+            
+            $result=array('msg'=>true); //แสดง massage true
+            return $this->response->withJson($result); //แสดงผลตัวแปร result มาเป็น Json        
+        }
+    }
+});
+
+//แสดงห้อง
+$app->get('/showRoom',function($request,$response,$args){
+    $sth = $this->db->prepare('SELECT * FROM room');
+    $sth->execute();
+    $room=$sth->fetchAll(); 
+    return $this->response->withJson($room); 
+});
+
+
+
+/*
 //เพิ่ม เมธอท เพื่อ 
 //prepare เป็นการเตรียมคำสั่ง sql
 //execute เปรียบเหมือนการ query
 //fetchAll เปรียบเหมือนการ fetch_array
 
-$app->get('/showRoom',function($request,$response,$args){
-    $sth = $this->db->prepare('SELECT * FROM room');
-    $sth->execute();
-    $room=$sth->fetchAll(); // fetchAll คือ การ fetch ทั้งหมดคืนค่าเป็น  array
-    return $this->response->withJson($room); // return ค่าเป็น Json
-});
-
-
-/*
 $app->get('/ShowCustomer',function($request,$response,$args){
     $sth = $this->db->prepare('SELECT * FROM customer');
     $sth->execute();
